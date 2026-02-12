@@ -114,4 +114,28 @@ clients:
 kubectl apply -f promtail.yaml
 ```
 
+## 5. Deploy Prometheus
 
+Prometheus collects metrics from Kubernetes nodes, pods, and services.
+
+**Documentation:**
+- [Prometheus Helm Chart](https://artifacthub.io/packages/helm/prometheus-community/prometheus)
+
+**Commands:**
+
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install my-prometheus prometheus-community/prometheus -n obs -f my-prometheus-values.yaml
+```
+
+**Prometheus Server URL:**
+```
+http://my-prometheus-server.obs.svc.cluster.local
+```
+
+### Configure Prometheus Datasource in Grafana
+
+**Datasource URL:**
+```
+http://my-prometheus-server.obs.svc.cluster.local
+```

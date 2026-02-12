@@ -1,0 +1,40 @@
+# Prometheus configuration for lab/dev environment
+# Optimized for lightweight deployment
+
+# Server configuration
+server:
+  # Reduce resource requirements for local/lab environment
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+  # Data retention
+  retention: "7d"
+
+  # Persistent storage (optional - disable for ephemeral setup)
+  persistentVolume:
+    enabled: true
+    size: 8Gi
+
+# Disable components not needed for basic monitoring
+alertmanager:
+  enabled: false
+
+# Disable Prometheus Pushgateway (not needed for lab)
+pushgateway:
+  enabled: false
+
+# Keep kube-state-metrics for Kubernetes metrics
+kubeStateMetrics:
+  enabled: true
+
+# Keep node-exporter for node metrics
+nodeExporter:
+  enabled: true
+
+# The default scrape configs are automatically included by the Helm chart
+# No need to override unless you have specific customizations
