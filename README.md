@@ -139,3 +139,35 @@ http://my-prometheus-server.obs.svc.cluster.local
 ```
 http://my-prometheus-server.obs.svc.cluster.local
 ```
+
+## 6. Import Loki Dashboard in Grafana
+
+To visualize Kubernetes logs from Loki, import this pre-built dashboard:
+
+**Dashboard:**
+- [Kubernetes Service Logs Dashboard](https://grafana.com/grafana/dashboards/15141-kubernetes-service-logs/)
+- Dashboard ID: `15141`
+
+**Import Steps:**
+1. In Grafana, go to **Dashboards** → **New** → **Import**
+2. Enter Dashboard ID: `15141`
+3. Select your Loki datasource
+4. Click **Import**
+
+![Loki Dashboard](assets/screenshots/loki-dashboard.png)
+
+## 7. Import Prometheus Dashboard in Grafana
+
+To visualize Kubernetes metrics from Prometheus, import this comprehensive dashboard:
+
+**Dashboard:**
+- [K8s Dashboard EN](https://grafana.com/grafana/dashboards/15661-k8s-dashboard-en-20250125/)
+- Dashboard ID: `15661`
+
+**Import Steps:**
+1. In Grafana, go to **Dashboards** → **New** → **Import**
+2. Enter Dashboard ID: `15661`
+3. Select your Prometheus datasource
+4. Click **Import**
+
+![K8s Dashboard](assets/screenshots/k8s-dashboard.jpeg)
