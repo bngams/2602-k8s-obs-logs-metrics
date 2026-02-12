@@ -1,4 +1,7 @@
 loki:
+  # Uncomment to disable multi-tenant mode for lab/dev usage
+  # No need for X-Scope-OrgID header or tenant_id in this mode
+  # auth_enabled: false
   commonConfig:
     replication_factor: 1
   schemaConfig:

@@ -1,67 +1,117 @@
 # Requirements
 
-Local kubernetes cluster + Helm
+- Local Kubernetes cluster
+- Helm 3+
 
+# Setup
 
-# Create namespace
+## 1. Create Namespace
 
+```bash
 kubectl create namespace obs
-
-
-# Deploy a Loki monolithic multi tenant stack
-
-Source helm chart:
-https://artifacthub.io/packages/helm/grafana/loki?modal=install
-
-Source fichier config:
-https://grafana.com/docs/loki/latest/setup/install/helm/install-monolithic/#single-replica-or-multiple-replicas
-
-Commands:
-
-helm repo add grafana https://grafana.github.io/helm-charts
-
-helm install my-loki grafana/loki -n obs -f my-loki-values.yaml --version 6.53.0
-
-
-Note the main information after deploy (loki url....)
-http://my-loki-gateway.obs.svc.cluster.local/
-
-
-# Deploy grafana in the same namespace
-
-Source helm chart:
-https://artifacthub.io/packages/helm/grafana-community/grafana
-
-
-Commands:
-
-helm repo add grafana-community https://grafana-community.github.io/helm-charts/
-
-helm install my-grafana grafana-community/grafana  -n obs 
-
-
-Note the main information after deploy (grafana command to get default password....)
-
-Note: Our current loki stack is waiting an OrgId for auth/communication so we need to add and http Header like this for datasource config in grafana: "X-Scope-OrgID"
-
-
-# Deploy a promtail daemonset to send logs to promtail
-
-
-Source grafana promtail doc: 
-https://grafana.com/docs/loki/latest/send-data/promtail/installation/#install-as-kubernetes-daemonset-recommended
-
-Be careful to replace values correctly to communicate with our loki
 ```
+
+## 2. Deploy Loki Stack
+
+Deploy a Loki monolithic stack with single binary deployment mode.
+
+**Documentation:**
+- [Loki Helm Chart](https://artifacthub.io/packages/helm/grafana/loki?modal=install)
+- [Monolithic Installation Guide](https://grafana.com/docs/loki/latest/setup/install/helm/install-monolithic/#single-replica-or-multiple-replicas)
+
+**Commands:**
+
+```bash
+helm repo add grafana https://grafana.github.io/helm-charts
+helm install my-loki grafana/loki -n obs -f my-loki-values.yaml --version 6.53.0
+```
+
+**Loki Gateway URL:**
+```
+http://my-loki-gateway.obs.svc.cluster.local/
+```
+
+
+### ⚠️ Multi-Tenant Configuration
+
+**Loki runs in multi-tenant mode by default** and requires the `X-Scope-OrgID` header for all requests.
+
+#### Option 1: Disable Multi-Tenant Mode (Recommended for Lab/Dev)
+
+Uncomment `auth_enabled: false` in [my-loki-values.yaml](my-loki-values.yaml):
+
+```yaml
+loki:
+  auth_enabled: false
+```
+
+**Benefits:**
+- ✅ No `X-Scope-OrgID` header required in Grafana datasource
+- ✅ No `tenant_id` required in Promtail configuration
+- ✅ Simpler setup for local development and labs
+
+#### Option 2: Keep Multi-Tenant Mode (Current Configuration)
+
+If you keep multi-tenant mode enabled, configure:
+
+**Grafana Datasource:**
+- Add HTTP header: `X-Scope-OrgID` with value `1` (or your chosen tenant ID)
+
+**Promtail Configuration:**
+```yaml
 clients:
-  - url: http://my-loki-gateway.observability.svc.cluster.local/loki/api/v1/push
+  - url: http://my-loki-gateway.obs.svc.cluster.local/loki/api/v1/push
     tenant_id: "1"
 ```
 
-(the local config file promtail.yml in this repo should be ok with our local loki config we used before my-loki-values.yaml)
 
+## 3. Deploy Grafana
 
-Start promtail:
+**Documentation:**
+- [Grafana Helm Chart](https://artifacthub.io/packages/helm/grafana-community/grafana)
+
+**Commands:**
+
+```bash
+helm repo add grafana-community https://grafana-community.github.io/helm-charts/
+helm install my-grafana grafana-community/grafana -n obs
+```
+
+**Post-installation:**
+- Note the command to retrieve the default admin password (shown in deployment output)
+
+### Configure Loki Datasource in Grafana
+
+**Datasource URL:**
+```
+http://my-loki-gateway.obs.svc.cluster.local
+```
+
+**If using multi-tenant mode (Option 2):**
+- Add HTTP Header: `X-Scope-OrgID` with value `1`
+
+## 4. Deploy Promtail
+
+Promtail runs as a DaemonSet to collect logs from all nodes and send them to Loki.
+
+**Documentation:**
+- [Promtail Installation Guide](https://grafana.com/docs/loki/latest/send-data/promtail/installation/#install-as-kubernetes-daemonset-recommended)
+
+**Configuration:**
+
+The [promtail.yaml](promtail.yaml) file is pre-configured for this setup.
+
+If using multi-tenant mode (Option 2), ensure `tenant_id` is set:
+```yaml
+clients:
+  - url: http://my-loki-gateway.obs.svc.cluster.local/loki/api/v1/push
+    tenant_id: "1"
+```
+
+**Deploy:**
+
+```bash
 kubectl apply -f promtail.yaml
+```
 
 
